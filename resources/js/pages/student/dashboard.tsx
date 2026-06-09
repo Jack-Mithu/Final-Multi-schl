@@ -1,53 +1,47 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage, Link, router } from '@inertiajs/react';
-import { BookOpen, Calendar, Award, TrendingUp, Clock, Download } from 'lucide-react';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from '@/components/ui/dialog';
-import { useState } from 'react';
+import { BookOpen, Clock, Award, Download, Calendar, TrendingUp, X, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Student Dashboard',
-        href: '/student/dashboard',
-    },
+    { title: 'Student Dashboard', href: '/student/dashboard' },
 ];
 
 const studentStats = [
     {
         label: 'My Courses',
-        icons: BookOpen,
+        icon: BookOpen,
         key: 'enrolledCourses',
         description: 'Courses enrolled',
-        color: 'text-blue-500',
+        color: '#6366f1',
+        bg: 'rgba(99,102,241,0.08)',
+        border: 'rgba(99,102,241,0.18)',
+        glow: '0 0 32px 0 rgba(99,102,241,0.18)',
+        action: 'courses',
     },
     {
         label: 'Timetable',
-        icons: Clock,
+        icon: Clock,
         key: 'timetableCount',
         description: 'Class schedules',
-        color: 'text-purple-500',
+        color: '#a855f7',
+        bg: 'rgba(168,85,247,0.08)',
+        border: 'rgba(168,85,247,0.18)',
+        glow: '0 0 32px 0 rgba(168,85,247,0.18)',
+        action: 'timetable',
     },
     {
         label: 'Grades',
-        icons: Award,
+        icon: Award,
         key: 'grades',
         description: 'Average grade',
-        color: 'text-yellow-500',
+        color: '#f59e0b',
+        bg: 'rgba(245,158,11,0.08)',
+        border: 'rgba(245,158,11,0.18)',
+        glow: '0 0 32px 0 rgba(245,158,11,0.18)',
+        action: 'grades',
     },
-
 ];
 
 interface Enrollment {
@@ -67,6 +61,112 @@ interface Timetable {
     room: string;
 }
 
+function AnimatedNumber({ value }: { value: number }) {
+    const [display, setDisplay] = useState(0);
+    useEffect(() => {
+        let start = 0;
+        const end = value;
+        if (end === 0) return;
+        const duration = 900;
+        const step = Math.ceil(end / (duration / 16));
+        const timer = setInterval(() => {
+            start += step;
+            if (start >= end) { setDisplay(end); clearInterval(timer); }
+            else setDisplay(start);
+        }, 16);
+        return () => clearInterval(timer);
+    }, [value]);
+    return <>{display.toLocaleString()}</>;
+}
+
+function Modal({ open, onClose, title, icon: Icon, iconColor, children }: {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    icon: React.ElementType;
+    iconColor: string;
+    children: React.ReactNode;
+}) {
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        if (open) document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [open, onClose]);
+
+    if (!open) return null;
+
+    return (
+        <div
+            style={{
+                position: 'fixed', inset: 0, zIndex: 100,
+                background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '1rem',
+            }}
+            onClick={onClose}
+        >
+            <div
+                style={{
+                    background: '#13151f',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '20px',
+                    width: '100%',
+                    maxWidth: '600px',
+                    maxHeight: '80vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+                    overflow: 'hidden',
+                }}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Modal header */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '1.5rem 1.75rem',
+                    borderBottom: '1px solid rgba(255,255,255,0.07)',
+                    flexShrink: 0,
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{
+                            width: 38, height: 38, borderRadius: 10,
+                            background: `${iconColor}18`,
+                            border: `1px solid ${iconColor}30`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <Icon size={18} style={{ color: iconColor }} />
+                        </div>
+                        <span style={{
+                            fontFamily: "'Syne', sans-serif",
+                            fontWeight: 700, fontSize: '1.15rem',
+                            color: '#f0f0f8', letterSpacing: '-0.02em',
+                        }}>{title}</span>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: 8, width: 32, height: 32,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer', color: '#6b7280',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#f0f0f8'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6b7280'; }}
+                    >
+                        <X size={15} />
+                    </button>
+                </div>
+                {/* Modal body */}
+                <div style={{ overflowY: 'auto', padding: '1.25rem 1.75rem 1.75rem', flexGrow: 1 }}>
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function StudentDashboard() {
     const pageProps = usePage<{
         schoolName?: string;
@@ -78,210 +178,611 @@ export default function StudentDashboard() {
         progress?: number;
     }>().props;
 
+    const [mounted, setMounted] = useState(false);
     const [isCoursesModalOpen, setIsCoursesModalOpen] = useState(false);
     const [isTimetableModalOpen, setIsTimetableModalOpen] = useState(false);
+
+    useEffect(() => { setTimeout(() => setMounted(true), 60); }, []);
+
     const enrollments = pageProps.enrollments || [];
     const timetables = pageProps.timetables || [];
 
     const formatDate = (dateString: string) => {
         if (!dateString) return 'N/A';
         try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric',
             });
-        } catch {
-            return dateString;
-        }
+        } catch { return dateString; }
+    };
+
+    const handleCardClick = (action: string) => {
+        if (action === 'courses') setIsCoursesModalOpen(true);
+        else if (action === 'timetable') setIsTimetableModalOpen(true);
+        else if (action === 'grades') router.get('/student/grades');
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Student Dashboard" />
-            <div className="py-12 min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="mb-8">
-                        {/* Welcome Section */}
-                        <div className="mb-6">
-                            <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-primary drop-shadow-lg text-left">
-                                Welcome, Student! 🎓
-                            </h1>
-                            {pageProps.schoolName && (
-                                <div className="text-xl text-gray-700 dark:text-gray-200 font-semibold text-left mb-2">
-                                    <span className="inline-block px-4 py-1 rounded-full bg-primary/10 dark:bg-primary/20 text-primary font-bold shadow-sm">
-                                        {pageProps.schoolName}
-                                    </span>
-                                </div>
-                            )}
-                            <div className="h-1 w-24 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 rounded-full mb-4"></div>
-                        </div>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            {studentStats.map(({ label, icons: Icon, key, description, color }) => {
-                                const isMyCourses = label === 'My Courses';
-                                const isTimetable = label === 'Timetable';
-                                const isGrades = label === 'Grades';
-                                return (
-                                    <Card
-                                        key={label}
-                                        className={`transition-all hover:scale-105 hover:shadow-xl border-2 hover:border-primary/30 ${
-                                            isMyCourses || isTimetable || isGrades ? 'cursor-pointer' : ''
-                                        }`}
-                                        onClick={() => {
-                                            if (isMyCourses) setIsCoursesModalOpen(true);
-                                            if (isTimetable) setIsTimetableModalOpen(true);
-                                            if (isGrades) router.get('/student/grades');
-                                        }}
-                                    >
-                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                                <Icon className={`w-5 h-5 ${color}`} />
-                                                {label}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="text-3xl font-extrabold mb-1 text-center tracking-tight text-gray-900 dark:text-white drop-shadow">
-                                                {(pageProps[key as keyof typeof pageProps] as number) || 0}
-                                            </div>
-                                            <CardDescription className="text-center text-sm">
-                                                {description}
-                                            </CardDescription>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
+                .sdash-root {
+                    font-family: 'DM Sans', sans-serif;
+                    min-height: 100vh;
+                    background: #0b0d14;
+                    padding: 2rem 1.5rem 3rem;
+                    position: relative;
+                    overflow: hidden;
+                }
+                .sdash-root::before {
+                    content: '';
+                    position: fixed;
+                    top: -30%; left: -10%;
+                    width: 60vw; height: 60vw;
+                    background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
+                    pointer-events: none; z-index: 0;
+                }
+                .sdash-root::after {
+                    content: '';
+                    position: fixed;
+                    bottom: -20%; right: -10%;
+                    width: 50vw; height: 50vw;
+                    background: radial-gradient(ellipse, rgba(168,85,247,0.09) 0%, transparent 70%);
+                    pointer-events: none; z-index: 0;
+                }
+                .sdash-inner {
+                    max-width: 1300px;
+                    margin: 0 auto;
+                    position: relative;
+                    z-index: 1;
+                }
 
-                        {/* Info Card */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <Link href="/student/assessments">
-                                <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-shadow cursor-pointer">
-                                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-                                        <Download className="w-6 h-6" />
-                                        Assessment Files
-                                    </h2>
-                                    <p className="text-blue-50">
-                                        Download assessment materials and study resources shared by your instructors.
-                                    </p>
-                                </div>
-                            </Link>
+                /* Header */
+                .sdash-header {
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: space-between;
+                    gap: 1.5rem;
+                    margin-bottom: 2.8rem;
+                    flex-wrap: wrap;
+                    opacity: 0;
+                    transform: translateY(18px);
+                    transition: opacity 0.55s ease, transform 0.55s ease;
+                }
+                .sdash-header.visible { opacity: 1; transform: translateY(0); }
 
+                .sdash-eyebrow {
+                    font-size: 0.72rem;
+                    font-weight: 500;
+                    letter-spacing: 0.18em;
+                    text-transform: uppercase;
+                    color: #6366f1;
+                    margin-bottom: 0.45rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .sdash-eyebrow::before {
+                    content: '';
+                    display: inline-block;
+                    width: 22px; height: 2px;
+                    background: #6366f1;
+                    border-radius: 2px;
+                }
+                .sdash-title {
+                    font-family: 'Syne', sans-serif;
+                    font-size: clamp(2rem, 4vw, 3rem);
+                    font-weight: 800;
+                    color: #f0f0f8;
+                    line-height: 1.08;
+                    letter-spacing: -0.03em;
+                    margin: 0;
+                }
+                .sdash-title span { color: #6366f1; }
+                .sdash-subtitle {
+                    font-size: 0.93rem;
+                    color: #6b7280;
+                    margin-top: 0.55rem;
+                    max-width: 440px;
+                    line-height: 1.6;
+                }
+                .school-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.55rem 1.1rem;
+                    border-radius: 999px;
+                    background: rgba(99,102,241,0.1);
+                    border: 1px solid rgba(99,102,241,0.25);
+                    color: #a5b4fc;
+                    font-size: 0.83rem;
+                    font-weight: 600;
+                    white-space: nowrap;
+                }
+                .school-badge::before {
+                    content: '';
+                    width: 7px; height: 7px;
+                    border-radius: 50%;
+                    background: #6366f1;
+                    box-shadow: 0 0 6px 2px rgba(99,102,241,0.5);
+                    animation: pulse-dot 2s ease-in-out infinite;
+                }
+                @keyframes pulse-dot {
+                    0%, 100% { opacity: 1; transform: scale(1); }
+                    50% { opacity: 0.6; transform: scale(0.8); }
+                }
+
+                /* Stats grid */
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                    gap: 1.25rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .stat-card {
+                    background: rgba(255,255,255,0.035);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 20px;
+                    padding: 1.6rem 1.5rem 1.4rem;
+                    position: relative;
+                    overflow: hidden;
+                    cursor: pointer;
+                    opacity: 0;
+                    transform: translateY(22px);
+                    transition:
+                        opacity 0.5s ease,
+                        transform 0.5s ease,
+                        box-shadow 0.3s ease,
+                        border-color 0.3s ease,
+                        background 0.3s ease;
+                    text-decoration: none;
+                }
+                .stat-card.visible { opacity: 1; transform: translateY(0); }
+                .stat-card:hover {
+                    background: rgba(255,255,255,0.055);
+                    transform: translateY(-4px) !important;
+                    border-color: var(--accent-border-hover);
+                }
+                .stat-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: 2px;
+                    border-radius: 20px 20px 0 0;
+                    background: var(--accent);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+                .stat-card:hover::before { opacity: 1; }
+
+                .stat-glow {
+                    position: absolute;
+                    top: -40%; right: -20%;
+                    width: 130px; height: 130px;
+                    border-radius: 50%;
+                    background: var(--accent);
+                    opacity: 0;
+                    filter: blur(48px);
+                    transition: opacity 0.4s ease;
+                    pointer-events: none;
+                }
+                .stat-card:hover .stat-glow { opacity: 0.12; }
+
+                .stat-top {
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: space-between;
+                    margin-bottom: 1.3rem;
+                }
+                .stat-icon-wrap {
+                    width: 42px; height: 42px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: var(--accent-bg);
+                    border: 1px solid var(--accent-border);
+                    transition: background 0.3s, box-shadow 0.3s;
+                }
+                .stat-card:hover .stat-icon-wrap {
+                    background: var(--accent);
+                    box-shadow: var(--accent-glow);
+                }
+                .stat-card:hover .stat-icon-wrap svg { color: #fff !important; }
+
+                .stat-arrow {
+                    color: #374151;
+                    transition: color 0.3s, transform 0.3s;
+                }
+                .stat-card:hover .stat-arrow {
+                    color: var(--accent);
+                    transform: translate(2px, -2px);
+                }
+
+                .stat-value {
+                    font-family: 'Syne', sans-serif;
+                    font-size: 2.4rem;
+                    font-weight: 800;
+                    color: #f0f0f8;
+                    line-height: 1;
+                    letter-spacing: -0.03em;
+                    margin-bottom: 0.3rem;
+                }
+                .stat-label {
+                    font-size: 0.88rem;
+                    font-weight: 600;
+                    color: #d1d5db;
+                    margin-bottom: 0.15rem;
+                }
+                .stat-desc { font-size: 0.75rem; color: #4b5563; }
+
+                .stat-bar {
+                    margin-top: 1.2rem;
+                    height: 3px;
+                    background: rgba(255,255,255,0.06);
+                    border-radius: 999px;
+                    overflow: hidden;
+                }
+                .stat-bar-fill {
+                    height: 100%;
+                    border-radius: 999px;
+                    background: var(--accent);
+                    width: 0%;
+                    transition: width 1.1s cubic-bezier(.22,1,.36,1);
+                }
+
+                /* Assessment card */
+                .action-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 1.25rem;
+                    margin-bottom: 1.5rem;
+                }
+                .action-card {
+                    background: rgba(255,255,255,0.035);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 20px;
+                    padding: 1.6rem 1.5rem;
+                    position: relative;
+                    overflow: hidden;
+                    cursor: pointer;
+                    text-decoration: none;
+                    display: block;
+                    opacity: 0;
+                    transform: translateY(22px);
+                    transition:
+                        opacity 0.5s ease,
+                        transform 0.5s ease,
+                        background 0.3s ease,
+                        border-color 0.3s ease;
+                }
+                .action-card.visible { opacity: 1; transform: translateY(0); }
+                .action-card:hover {
+                    background: rgba(255,255,255,0.055);
+                    transform: translateY(-4px) !important;
+                    border-color: rgba(99,102,241,0.3);
+                }
+                .action-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    height: 2px;
+                    border-radius: 20px 20px 0 0;
+                    background: linear-gradient(90deg, #6366f1, #a855f7);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+                .action-card:hover::before { opacity: 1; }
+
+                .action-card-glow {
+                    position: absolute;
+                    top: -40%; right: -20%;
+                    width: 150px; height: 150px;
+                    border-radius: 50%;
+                    background: #6366f1;
+                    opacity: 0;
+                    filter: blur(56px);
+                    transition: opacity 0.4s ease;
+                    pointer-events: none;
+                }
+                .action-card:hover .action-card-glow { opacity: 0.1; }
+
+                .action-icon-wrap {
+                    width: 44px; height: 44px;
+                    border-radius: 12px;
+                    display: flex; align-items: center; justify-content: center;
+                    background: rgba(99,102,241,0.1);
+                    border: 1px solid rgba(99,102,241,0.2);
+                    margin-bottom: 1rem;
+                    transition: background 0.3s, box-shadow 0.3s;
+                }
+                .action-card:hover .action-icon-wrap {
+                    background: #6366f1;
+                    box-shadow: 0 0 20px rgba(99,102,241,0.4);
+                }
+                .action-card:hover .action-icon-wrap svg { color: #fff !important; }
+
+                .action-title {
+                    font-family: 'Syne', sans-serif;
+                    font-size: 1.05rem;
+                    font-weight: 700;
+                    color: #f0f0f8;
+                    letter-spacing: -0.02em;
+                    margin-bottom: 0.35rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                }
+                .action-chevron {
+                    color: #374151;
+                    transition: color 0.3s, transform 0.3s;
+                    margin-left: auto;
+                }
+                .action-card:hover .action-chevron {
+                    color: #6366f1;
+                    transform: translateX(3px);
+                }
+                .action-desc {
+                    font-size: 0.82rem;
+                    color: #4b5563;
+                    line-height: 1.55;
+                }
+
+                /* Section label */
+                .section-label {
+                    font-size: 0.72rem;
+                    font-weight: 500;
+                    letter-spacing: 0.16em;
+                    text-transform: uppercase;
+                    color: #374151;
+                    margin-bottom: 1rem;
+                    margin-top: 2rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.6rem;
+                }
+                .section-label::after {
+                    content: '';
+                    flex: 1;
+                    height: 1px;
+                    background: rgba(255,255,255,0.05);
+                }
+
+                /* Modal internals */
+                .modal-empty {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 3rem 1rem;
+                    color: #4b5563;
+                    text-align: center;
+                    gap: 0.75rem;
+                }
+                .modal-empty p { font-size: 0.85rem; line-height: 1.6; max-width: 280px; }
+
+                .modal-item {
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.07);
+                    border-radius: 14px;
+                    padding: 1.1rem 1.25rem;
+                    margin-bottom: 0.75rem;
+                    transition: background 0.2s, border-color 0.2s;
+                }
+                .modal-item:hover {
+                    background: rgba(255,255,255,0.055);
+                    border-color: rgba(255,255,255,0.12);
+                }
+                .modal-item:last-child { margin-bottom: 0; }
+
+                .modal-course-name {
+                    font-family: 'Syne', sans-serif;
+                    font-weight: 700;
+                    font-size: 0.97rem;
+                    color: #f0f0f8;
+                    letter-spacing: -0.01em;
+                    margin-bottom: 0.4rem;
+                }
+                .modal-meta {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.78rem;
+                    color: #4b5563;
+                }
+                .modal-tag {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.3rem;
+                    padding: 2px 8px;
+                    border-radius: 999px;
+                    background: rgba(99,102,241,0.1);
+                    border: 1px solid rgba(99,102,241,0.18);
+                    color: #a5b4fc;
+                    font-size: 0.72rem;
+                    font-weight: 600;
+                    margin-bottom: 0.6rem;
+                }
+                .modal-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 0.5rem 1rem;
+                    margin-top: 0.6rem;
+                }
+                .modal-grid-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.4rem;
+                    font-size: 0.79rem;
+                    color: #6b7280;
+                }
+                .modal-grid-item span { color: #d1d5db; font-weight: 500; }
+
+                @media (max-width: 640px) {
+                    .sdash-root { padding: 1.25rem 1rem 2rem; }
+                    .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+                    .stat-value { font-size: 1.9rem; }
+                    .modal-grid { grid-template-columns: 1fr; }
+                }
+            `}</style>
+
+            <div className="sdash-root">
+                <div className="sdash-inner">
+
+                    {/* Header */}
+                    <div className={`sdash-header ${mounted ? 'visible' : ''}`}>
+                        <div>
+                            <div className="sdash-eyebrow">Student Portal</div>
+                            <h1 className="sdash-title">Student <span>Dashboard</span></h1>
+                            <p className="sdash-subtitle">
+                                Track your courses, schedule, and academic progress — all in one place.
+                            </p>
                         </div>
+                        {pageProps.schoolName && (
+                            <div className="school-badge">{pageProps.schoolName}</div>
+                        )}
                     </div>
+
+                    {/* Stats */}
+                    <div className="stats-grid">
+                        {studentStats.map(({ label, icon: Icon, key, description, color, bg, border, glow, action }, i) => {
+                            const value = (pageProps[key as keyof typeof pageProps] as number) ?? 0;
+                            const barWidth = Math.min(100, Math.max(12, (value / 20) * 100));
+                            return (
+                                <div
+                                    key={label}
+                                    className={`stat-card ${mounted ? 'visible' : ''}`}
+                                    style={{
+                                        '--accent': color,
+                                        '--accent-bg': bg,
+                                        '--accent-border': border,
+                                        '--accent-border-hover': border,
+                                        '--accent-glow': glow,
+                                        transitionDelay: mounted ? `${i * 80}ms` : '0ms',
+                                    } as React.CSSProperties}
+                                    onClick={() => handleCardClick(action)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={e => { if (e.key === 'Enter') handleCardClick(action); }}
+                                >
+                                    <div className="stat-glow" />
+                                    <div className="stat-top">
+                                        <div className="stat-icon-wrap">
+                                            <Icon size={18} style={{ color }} />
+                                        </div>
+                                        <ChevronRight size={16} className="stat-arrow" />
+                                    </div>
+                                    <div className="stat-value">
+                                        {mounted ? <AnimatedNumber value={value} /> : 0}
+                                    </div>
+                                    <div className="stat-label">{label}</div>
+                                    <div className="stat-desc">{description}</div>
+                                    <div className="stat-bar">
+                                        <div className="stat-bar-fill" style={{ width: mounted ? `${barWidth}%` : '0%' }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="section-label">Quick Access</div>
+                    <div className="action-grid">
+                        <Link
+                            href="/student/assessments"
+                            className={`action-card ${mounted ? 'visible' : ''}`}
+                            style={{ transitionDelay: mounted ? '240ms' : '0ms' }}
+                        >
+                            <div className="action-card-glow" />
+                            <div className="action-icon-wrap">
+                                <Download size={18} style={{ color: '#6366f1' }} />
+                            </div>
+                            <div className="action-title">
+                                Assessment Files
+                                <ChevronRight size={15} className="action-chevron" />
+                            </div>
+                            <div className="action-desc">
+                                Download materials and study resources shared by your instructors.
+                            </div>
+                        </Link>
+                    </div>
+
                 </div>
             </div>
 
             {/* My Courses Modal */}
-            <Dialog open={isCoursesModalOpen} onOpenChange={setIsCoursesModalOpen}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-2xl">
-                            <BookOpen className="w-6 h-6 text-blue-500" />
-                            My Enrolled Courses
-                        </DialogTitle>
-                        <DialogDescription>
-                            View all courses you are currently enrolled in
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {enrollments.length === 0 ? (
-                        <div className="py-12 text-center">
-                            <BookOpen className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">No Enrolled Courses</h3>
-                            <p className="text-muted-foreground">
-                                You are not currently enrolled in any courses. Please contact your administrator.
-                            </p>
+            <Modal
+                open={isCoursesModalOpen}
+                onClose={() => setIsCoursesModalOpen(false)}
+                title="My Enrolled Courses"
+                icon={BookOpen}
+                iconColor="#6366f1"
+            >
+                {enrollments.length === 0 ? (
+                    <div className="modal-empty">
+                        <BookOpen size={36} style={{ color: '#374151' }} />
+                        <strong style={{ color: '#6b7280', fontFamily: "'Syne', sans-serif" }}>No courses yet</strong>
+                        <p>You're not enrolled in any courses. Contact your administrator to get started.</p>
+                    </div>
+                ) : (
+                    enrollments.map(enrollment => (
+                        <div key={enrollment.enrollment_id} className="modal-item">
+                            <div className="modal-course-name">{enrollment.course_name}</div>
+                            <div className="modal-meta">
+                                <Calendar size={12} />
+                                Enrolled {formatDate(enrollment.enrollment_date)}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="space-y-4 mt-4">
-                            {enrollments.map((enrollment) => (
-                                <div
-                                    key={enrollment.enrollment_id}
-                                    className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold mb-2">
-                                                {enrollment.course_name}
-                                            </h3>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                <Calendar className="h-4 w-4" />
-                                                <span>
-                                                    Enrolled on: {formatDate(enrollment.enrollment_date)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                    ))
+                )}
+            </Modal>
 
             {/* Timetable Modal */}
-            <Dialog open={isTimetableModalOpen} onOpenChange={setIsTimetableModalOpen}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-2xl">
-                            <Clock className="w-6 h-6 text-purple-500" />
-                            Class Timetable
-                        </DialogTitle>
-                        <DialogDescription>
-                            View the schedule for your enrolled courses with teacher information
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {timetables.length === 0 ? (
-                        <div className="py-12 text-center">
-                            <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">No Timetable Available</h3>
-                            <p className="text-muted-foreground">
-                                No timetables have been scheduled for your courses yet.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4 mt-4">
-                            {timetables.map((timetable) => (
-                                <div
-                                    key={timetable.timetable_id}
-                                    className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
-                                >
-                                    <div className="mb-3">
-                                        <h3 className="text-lg font-semibold text-primary">
-                                            {timetable.course_name}
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Instructor: <span className="font-medium">{timetable.teacher_name}</span>
-                                        </p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <Calendar className="h-4 w-4 text-gray-500" />
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{timetable.day_of_week}</span>
-                                                <span className="text-xs text-muted-foreground">{formatDate(timetable.class_date)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Clock className="h-4 w-4 text-gray-500" />
-                                            <span className="font-medium">{timetable.start_time} - {timetable.end_time}</span>
-                                        </div>
-                                        <div className="col-span-2 flex items-center gap-2">
-                                            <BookOpen className="h-4 w-4 text-gray-500" />
-                                            <span className="font-medium">Room: {timetable.room}</span>
-                                        </div>
-                                    </div>
+            <Modal
+                open={isTimetableModalOpen}
+                onClose={() => setIsTimetableModalOpen(false)}
+                title="Class Timetable"
+                icon={Clock}
+                iconColor="#a855f7"
+            >
+                {timetables.length === 0 ? (
+                    <div className="modal-empty">
+                        <Clock size={36} style={{ color: '#374151' }} />
+                        <strong style={{ color: '#6b7280', fontFamily: "'Syne', sans-serif" }}>No schedule yet</strong>
+                        <p>No timetables have been set for your courses. Check back later.</p>
+                    </div>
+                ) : (
+                    timetables.map(timetable => (
+                        <div key={timetable.timetable_id} className="modal-item">
+                            <div className="modal-tag">
+                                <TrendingUp size={10} /> {timetable.day_of_week}
+                            </div>
+                            <div className="modal-course-name">{timetable.course_name}</div>
+                            <div className="modal-grid">
+                                <div className="modal-grid-item">
+                                    <BookOpen size={12} />
+                                    Instructor: <span>{timetable.teacher_name}</span>
                                 </div>
-                            ))}
+                                <div className="modal-grid-item">
+                                    <Clock size={12} />
+                                    <span>{timetable.start_time} – {timetable.end_time}</span>
+                                </div>
+                                <div className="modal-grid-item">
+                                    <Calendar size={12} />
+                                    <span>{formatDate(timetable.class_date)}</span>
+                                </div>
+                                <div className="modal-grid-item">
+                                    <BookOpen size={12} />
+                                    Room: <span>{timetable.room}</span>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+                    ))
+                )}
+            </Modal>
         </AppLayout>
     );
 }
-
