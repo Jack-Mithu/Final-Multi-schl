@@ -37,9 +37,8 @@
     33 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     34 => 'Termwind\\Laravel\\TermwindServiceProvider',
     35 => 'Spatie\\Permission\\PermissionServiceProvider',
-    36 => 'Laravel\\Boost\\BoostServiceProvider',
-    37 => 'App\\Providers\\AppServiceProvider',
-    38 => 'App\\Providers\\FortifyServiceProvider',
+    36 => 'App\\Providers\\AppServiceProvider',
+    37 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'eager' => 
   array (
@@ -64,9 +63,8 @@
     18 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     19 => 'Termwind\\Laravel\\TermwindServiceProvider',
     20 => 'Spatie\\Permission\\PermissionServiceProvider',
-    21 => 'Laravel\\Boost\\BoostServiceProvider',
-    22 => 'App\\Providers\\AppServiceProvider',
-    23 => 'App\\Providers\\FortifyServiceProvider',
+    21 => 'App\\Providers\\AppServiceProvider',
+    22 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'deferred' => 
   array (
@@ -124,6 +122,7 @@
     'Illuminate\\Queue\\Console\\RetryCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Queue\\Console\\RetryBatchCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Queue\\Console\\WorkCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
+    'Illuminate\\Foundation\\Console\\ReloadCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Foundation\\Console\\RouteCacheCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Foundation\\Console\\RouteClearCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Foundation\\Console\\RouteListCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
@@ -202,7 +201,6 @@
     'Illuminate\\Database\\Console\\Migrations\\MigrateMakeCommand' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'composer' => 'Illuminate\\Foundation\\Providers\\ConsoleSupportServiceProvider',
     'Illuminate\\Concurrency\\ConcurrencyManager' => 'Illuminate\\Concurrency\\ConcurrencyServiceProvider',
-    'Laravel\Boost\BoostServiceProvider' => 'Laravel\Boost\BoostServiceProvider',
     'hash' => 'Illuminate\\Hashing\\HashServiceProvider',
     'hash.driver' => 'Illuminate\\Hashing\\HashServiceProvider',
     'mail.manager' => 'Illuminate\\Mail\\MailServiceProvider',
