@@ -10,6 +10,7 @@ use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\AssessmentController;
 use App\Http\Controllers\StudentAssessmentController;
 use App\Http\Controllers\TeacherSubmissionController;
+use App\Http\Controllers\SuperAdminDashboardController;
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +22,10 @@ Route::get('/', function () {
         'canRegister' => Features::enabled(Features::registration()),
     ]);
 })->name('home');
+
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/superadmin/dashboard', [SuperAdminDashboardController::class, 'index'])->name('superadmin.dashboard');
+});
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
