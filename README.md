@@ -1,6 +1,8 @@
-# 🏫 Multi-School Management Platform
+# 🏫 Multi-SchoolHub
 
 **A multi-tenant school management system** where each school runs as its own tenant, with separate dashboards for super admins, school admins, teachers and students.
+
+### 🌐 [View it live → multi-schoolhub.laravel.cloud](https://multi-schoolhub.laravel.cloud/)
 
 ![Laravel](https://img.shields.io/badge/Laravel_12-FF2D20?style=flat-square&logo=laravel&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
